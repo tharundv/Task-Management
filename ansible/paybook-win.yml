@@ -1,0 +1,53 @@
+---
+- name: Deploy Task Management API on Windows
+  hosts: all
+  become: yes
+  vars:
+    repo_url: "https://github.com/tharundv/Task-Management.git"
+    app_dir: "{{ playbook_dir }}"  # Use the current directory where the playbook is located
+
+  tasks:
+    - name: Install Chocolatey
+      win_get_url:
+        url: https://chocolatey.org/install.ps1
+        dest: C:\install.ps1
+
+    - name: Run Chocolatey installation script
+      win_shell: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force; 
+        [System.IO.File]::ReadAllText('C:\install.ps1') | iex
+
+    - name: Install Node.js version 20 using Chocolatey
+      win_chocolatey:
+        name: nodejs-lts
+        version: '20.0.0'  # Specify the desired version of Node.js
+        state: present
+
+    - name: Install Git
+      win_chocolatey:
+        name: git
+        state: present
+
+    - name: Clone the repository
+      win_git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        update: yes
+
+    - name: Install npm dependencies
+      win_command: npm install
+      args:
+        chdir: "{{ app_dir }}"
+
+    - name: Start the application
+      win_command: npm start
+      args:
+        chdir: "{{ app_dir }}"
+      async: 10
+      poll: 0
+
+    - name: Wait for the application to start
+      wait_for:
+        port: 4000
+        delay: 5
+        timeout: 30
