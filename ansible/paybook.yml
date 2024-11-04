@@ -27,14 +27,19 @@
         name: nodejs
         state: present
 
+    - name: Add MongoDB APT repository
+      apt_repository:
+        repo: 'deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/multiverse amd64 packages'
+        state: present
+
     - name: Install MongoDB
       apt:
-        name: mongodb
+        name: mongodb-org
         state: present
 
     - name: Start MongoDB service
       service:
-        name: mongodb
+        name: mongod
         state: started
         enabled: yes
 
