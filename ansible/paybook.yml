@@ -1,28 +1,61 @@
 ---
-- hosts: all
+- name: Deploy Task Management API
+  hosts: all
   become: yes
+  vars:
+    repo_url: "https://github.com/tharundv/Task-Management.git"
+    app_dir: "/opt/task-management-api"
+    node_version: "14.x"  # Specify the Node.js version you want to install
+
   tasks:
+    - name: Install Node.js and npm
+      apt:
+        name: 
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add NodeSource APT repository
+      command: curl -sL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+      args:
+        warn: false
+
     - name: Install Node.js
       apt:
         name: nodejs
         state: present
 
-    - name: Install npm
+    - name: Install MongoDB
       apt:
-        name: npm
+        name: mongodb
         state: present
+
+    - name: Start MongoDB service
+      service:
+        name: mongodb
+        state: started
+        enabled: yes
 
     - name: Clone the repository
       git:
-        repo: 'https://github.com/tharundv/Task-Management.git'
-        dest: /opt/task-management-api
+        repo: "{{ repo_url }}"
+        dest: "{{ app_dir }}"
+        update: yes
 
-    - name: Install dependencies
+    - name: Install npm dependencies
       npm:
-        path: /opt/task-management-api
+        path: "{{ app_dir }}"
         state: present
 
     - name: Start the application
       command: npm start
       args:
-        chdir: /opt/task-management-api
+        chdir: "{{ app_dir }}"
+      async: 10
+      poll: 0
+
+    - name: Wait for the application to start
+      wait_for:
+        port: 4000
+        delay: 5
+        timeout: 30
