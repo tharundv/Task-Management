@@ -1,0 +1,19 @@
+meta {
+  name: complete task
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:4000/graphql
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {"query":"mutation { completeTask(id: \"67289864a60da9b1c0050559\") { id title completed } }"}
+}

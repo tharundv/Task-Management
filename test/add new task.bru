@@ -1,0 +1,21 @@
+meta {
+  name: add new task
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:4000/graphql
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "query": "mutation { addTask(title: \"New Task\") { id title completed } }"
+  }
+}

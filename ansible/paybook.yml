@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Install npm
+      apt:
+        name: npm
+        state: present
+
+    - name: Clone the repository
+      git:
+        repo: 'https://github.com/tharundv/Task-Management.git'
+        dest: /opt/task-management-api
+
+    - name: Install dependencies
+      npm:
+        path: /opt/task-management-api
+        state: present
+
+    - name: Start the application
+      command: npm start
+      args:
+        chdir: /opt/task-management-api
