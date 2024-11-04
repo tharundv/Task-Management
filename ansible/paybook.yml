@@ -18,9 +18,9 @@
         update_cache: yes
 
     - name: Add NodeSource APT repository
-      command: curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
+      shell: curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
       args:
-        warn: false
+        executable: /bin/bash
 
     - name: Install Node.js
       apt:
