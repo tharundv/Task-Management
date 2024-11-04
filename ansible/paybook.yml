@@ -5,18 +5,20 @@
   vars:
     repo_url: "https://github.com/tharundv/Task-Management.git"
     app_dir: "{{ playbook_dir }}"  # Use the current directory where the playbook is located
-    node_version: "20.0.0"  # Specify the Node.js version you want to install
+    node_version: "20.x"  # Use '20.x' to install the latest version in the 20.x series
 
   tasks:
-    - name: Install Node.js and npm
+    - name: Install required packages
       apt:
         name: 
           - curl
           - software-properties-common
+          - gnupg2  # Required for adding repositories securely
         state: present
+        update_cache: yes
 
     - name: Add NodeSource APT repository
-      command: curl -sL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+      command: curl -fsSL https://deb.nodesource.com/setup_{{ node_version }} | bash -
       args:
         warn: false
 
