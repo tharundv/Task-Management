@@ -1,0 +1,42 @@
+# deploy.yml
+- hosts: localhost
+  tasks:
+    - name: Ensure Node.js and npm are installed
+      become: yes
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: present
+        update_cache: yes
+
+    - name: Ensure MongoDB is installed
+      become: yes
+      apt:
+        name: mongodb
+        state: present
+        update_cache: yes
+
+    - name: Start MongoDB service
+      become: yes
+      service:
+        name: mongodb
+        state: started
+        enabled: yes
+
+    - name: Clone the repository
+      git:
+        repo: 'https://your-repo-url.git'
+        dest: '/path/to/your/app'
+        update: yes
+
+    - name: Install npm packages
+      command: npm install
+      args:
+        chdir: '/path/to/your/app'
+
+    - name: Start the application
+      command: npm start
+      args:
+        chdir: '/path/to/your/app'
+        creates: '/path/to/your/app/server.js'
