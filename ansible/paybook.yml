@@ -5,7 +5,7 @@
   vars:
     repo_url: "https://github.com/tharundv/Task-Management.git"
     app_dir: "{{ playbook_dir }}"  # Use the current directory where the playbook is located
-    node_version: "20"  # Specify the Node.js version you want to install
+    node_version: "20.0.0"  # Specify the Node.js version you want to install
 
   tasks:
     - name: Install Node.js and npm
