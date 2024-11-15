@@ -4,7 +4,14 @@ const { ApolloServer, gql } = require('apollo-server-express');
 const mongoose = require('mongoose');
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/taskdb', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://localhost:27017/taskdb', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((err) => {
+  console.error('Failed to connect to MongoDB', err);
+});
 
 // Define Task model
 const Task = mongoose.model('Task', {
@@ -34,31 +41,60 @@ const typeDefs = gql`
 // Define resolvers
 const resolvers = {
   Query: {
-    tasks: () => Task.find(),
-    task: (_, { id }) => Task.findById(id),
+    tasks: async () => {
+      try {
+        return await Task.find();
+      } catch (error) {
+        throw new Error('Error fetching tasks');
+      }
+    },
+    task: async (_, { id }) => {
+      try {
+        return await Task.findById(id);
+      } catch (error) {
+        throw new Error(`Error fetching task with ID: ${id}`);
+      }
+    },
   },
   Mutation: {
     addTask: async (_, { title }) => {
-      const task = new Task({ title, completed: false });
-      await task.save();
-      return task;
+      try {
+        const task = new Task({ title, completed: false });
+        await task.save();
+        return task;
+      } catch (error) {
+        throw new Error('Error adding task');
+      }
     },
     completeTask: async (_, { id }) => {
-      const task = await Task.findById(id);
-      task.completed = true;
-      await task.save();
-      return task;
+      try {
+        const task = await Task.findById(id);
+        if (!task) throw new Error(`Task with ID: ${id} not found`);
+        task.completed = true;
+        await task.save();
+        return task;
+      } catch (error) {
+        throw new Error(`Error completing task with ID: ${id}`);
+      }
     },
   },
 };
 
 // Create Apollo Server
-const server = new ApolloServer({ typeDefs, resolvers });
+async function startServer() {
+  const server = new ApolloServer({ typeDefs, resolvers });
 
-const app = express();
-server.applyMiddleware({ app });
+  await server.start();
 
-const PORT = 4000;
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}${server.graphqlPath}`);
+  const app = express();
+  server.applyMiddleware({ app });
+
+  const PORT = 4000;
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}${server.graphqlPath}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Failed to start server', error);
 });
